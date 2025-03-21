@@ -27,7 +27,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     except Exception as e:
         # Log any errors
-        logging.error(f"Error processing Mollie webhook: {str(e)}")
+        logging.error(f"Error processing Mollie webhook: {str(e)}.")
 
         # Return an error response
         return func.HttpResponse(f"Error processing webhook: {str(e)}", status_code=500)
