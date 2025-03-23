@@ -3,9 +3,7 @@
     {
       "authLevel": "anonymous",
       "type": "httpTrigger",
-      "direction": "in",
-      "name": "req",
-      "methods": ["post","get"],
+      "methods": ["POST","GET"],
       "route": "payment"
     },
     {
