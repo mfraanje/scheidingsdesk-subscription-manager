@@ -1,0 +1,21 @@
+{
+  "name": "scheidingsdesk-subscription-manager",
+  "version": "1.0.0",
+  "description": "Azure Function for handling Mollie webhooks",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prestart": "npm run build",
+    "start": "func start",
+    "test": "echo \"No tests yet...\""
+  },
+  "dependencies": {
+    "@mollie/api-client": "^3.7.0",
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "@azure/functions": "^3.5.0",
+    "@types/node": "^18.x",
+    "typescript": "^4.9.5"
+  }
+}
