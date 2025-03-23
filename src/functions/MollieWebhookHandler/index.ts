@@ -1,6 +1,7 @@
 // src/MollieWebhookHandler/index.ts
-import type { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { createMollieClient, type Payment, PaymentStatus } from "@mollie/api-client";
+import { app } from "@azure/functions";
+import type { HttpRequest, InvocationContext } from "@azure/functions";
+import {  createMollieClient, type Payment, PaymentStatus } from "@mollie/api-client";
 
 // Mollie webhook response interface
 interface MollieWebhookPayload {
@@ -51,55 +52,48 @@ const processPaymentStatus = (payment: Payment): void => {
 };
 
 // The actual Azure Function handler
-const httpTrigger: AzureFunction = async (
-  context: Context,
-  req: HttpRequest
-): Promise<void> => {
+export async function MollieWebhookHandler(
+  req: HttpRequest,
+  context: InvocationContext
+): Promise<any> {
   context.log("Mollie webhook function processed a request");
 
   try {
-    const payload = req.body as MollieWebhookPayload;
+    // const payload = req.body as MollieWebhookPayload;
     
-    if (!payload || !payload.id) {
-      context.res = {
-        status: 400,
-        body: { message: "Invalid webhook payload" }
-      };
-      return;
-    }
+    // if (!payload || !payload.id) {
+    //   context.res = {
+    //     status: 400,
+    //     body: { message: "Invalid webhook payload" }
+    //   };
+    //   return;
+    // }
 
-    const paymentId = payload.id;
-    const mollieClient = initMollieClient();
+    // const paymentId = payload.id;
+    // const mollieClient = initMollieClient();
 
-    // Get the payment details from Mollie
-    const payment = await mollieClient.payments.get(paymentId);
+    // // Get the payment details from Mollie
+    // const payment = await mollieClient.payments.get(paymentId);
     
-    // Process the payment status
-    processPaymentStatus(payment);
+    // // Process the payment status
+    // processPaymentStatus(payment);
 
     // Always respond with 200 OK to Mollie
-    context.res = {
+    return {
       status: 200,
       body: { received: true }
     };
   } catch (error) {
-    const err = error as Error;
-    context.log.error("Error processing webhook:", err);
-    
-    // Always return a 200 response to Mollie, even for errors
-    // This prevents Mollie from retrying the webhook unnecessarily
-    context.res = {
-      status: 200, 
-      body: { 
-        received: true,
-        processedWithError: true,
-        message: `Error: ${err.message}`
-      }
+    context.error(error);
+    return {
+      status: 500,
+      body: { message: "Internal server error" }
     };
-    
-    // In a production environment, you would want to log this error
-    // to your monitoring system and possibly trigger an alert
   }
 };
 
-export default httpTrigger;
+app.http('molliewebhookhandler', {
+    route: 'hello/world',
+    handler: MollieWebhookHandler,
+    authLevel: 'anonymous'
+});
