@@ -1,6 +1,6 @@
 // src/MollieWebhookHandler/index.ts
 import type { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { createMollieClient, Payment, PaymentStatus } from "@mollie/api-client";
+import { createMollieClient, type Payment, PaymentStatus } from "@mollie/api-client";
 
 // Mollie webhook response interface
 interface MollieWebhookPayload {
@@ -54,7 +54,7 @@ const processPaymentStatus = (payment: Payment): void => {
 const httpTrigger: AzureFunction = async (
   context: Context,
   req: HttpRequest
-): Promise<void> {
+): Promise<void> => {
   context.log("Mollie webhook function processed a request");
 
   try {
