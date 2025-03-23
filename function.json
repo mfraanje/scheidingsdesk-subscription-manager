@@ -5,8 +5,8 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "methods": ["post"],
-      "route": "webhooks/mollie"
+      "methods": ["post","get"],
+      "route": "payment"
     },
     {
       "type": "http",
