@@ -14,5 +14,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/main.js"
+  "scriptFile": "../dist/functions/MollieWebhookHandler.ts"
 }
