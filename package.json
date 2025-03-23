@@ -2,6 +2,7 @@
   "name": "scheidingsdesk-subscription-manager",
   "version": "1.0.0",
   "description": "Azure Function for handling Mollie webhooks",
+  "main": "dist/src/functions/*.js",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
