@@ -7,7 +7,7 @@ export async function subscriptionValidator(
 ): Promise<any> {
     context.log(req.body);
     return {
-        body: { subscription: true }
+        body: true 
     };
 }
 
