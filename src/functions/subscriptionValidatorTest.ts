@@ -13,7 +13,7 @@ export async function subscriptionValidatorTest(
 }
 
 app.http('subscriptionvalidatortest', {
-    route: 'subscription/validator/test',
+    route: 'subscription/validatortest',
     handler: subscriptionValidatorTest,
     authLevel: 'anonymous'
 });
