@@ -3,6 +3,11 @@ import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/fu
 import { ClientSecretCredential } from "@azure/identity";
 import { DynamicsWebApi } from "dynamics-web-api";
 
+
+interface RequestBody {
+  clientId: string;
+}
+
 /**
  * Azure Function to retrieve client data from Dataverse
  * @param request The HTTP request with client ID in the body
@@ -13,7 +18,7 @@ async function validateSubscription(request: HttpRequest, context: InvocationCon
     context.log('HTTP trigger function processed a request.');
 
     // Parse request body to get client ID
-    const requestBody = await request.json();
+    const requestBody = (await request.json()) as RequestBody;
     const clientId = requestBody?.clientId;
     
     if (!clientId) {
@@ -39,7 +44,7 @@ async function validateSubscription(request: HttpRequest, context: InvocationCon
             status: 200,
             jsonBody: clientData
         };
-    } catch (error) {
+    } catch (error: any) {
         context.error('Error retrieving client data:', error);
         return {
             status: 500,
