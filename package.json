@@ -11,8 +11,10 @@
     "test": "echo \"No tests yet...\""
   },
   "dependencies": {
+    "@azure/identity": "^4.8.0",
     "@mollie/api-client": "^3.7.0",
-    "axios": "^1.6.2"
+    "axios": "^1.6.2",
+    "dynamics-web-api": "^2.2.1"
   },
   "devDependencies": {
     "@azure/functions": "^4.0.0",

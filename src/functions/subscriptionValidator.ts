@@ -1,18 +1,119 @@
-import { app } from "@azure/functions";
-import type { HttpRequest, InvocationContext } from "@azure/functions";
+import {app} from "@azure/functions";
+import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
+import { ClientSecretCredential } from "@azure/identity";
+import { DynamicsWebApi } from "dynamics-web-api";
 
-export async function subscriptionValidator(
-    req: HttpRequest,
-    context: InvocationContext
-): Promise<any> {
-    context.log(req.body);
-    return {
-        body: true 
-    };
+/**
+ * Azure Function to retrieve client data from Dataverse
+ * @param request The HTTP request with client ID in the body
+ * @param context The function invocation context
+ * @returns HTTP response with client data or error
+ */
+async function validateSubscription(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+    context.log('HTTP trigger function processed a request.');
+
+    // Parse request body to get client ID
+    const requestBody = await request.json();
+    const clientId = requestBody?.clientId;
+    
+    if (!clientId) {
+        return {
+            status: 400,
+            jsonBody: { error: "Please provide a clientId in the request body" }
+        };
+    }
+
+    try {
+        // Get Dataverse data
+        const clientData = await getClientDataFromDataverse(clientId, context);
+        
+        if (!clientData) {
+            return {
+                status: 404,
+                jsonBody: { error: `Client with ID ${clientId} not found` }
+            };
+        }
+
+        // Return the client data
+        return {
+            status: 200,
+            jsonBody: clientData
+        };
+    } catch (error) {
+        context.error('Error retrieving client data:', error);
+        return {
+            status: 500,
+            jsonBody: { 
+                error: "An error occurred while retrieving client data",
+                details: error.message
+            }
+        };
+    }
 }
 
-app.http('subscriptionvalidator', {
-    route: 'subscription/validator',
-    handler: subscriptionValidator,
-    authLevel: 'anonymous'
+/**
+ * Function to get client data from Dataverse
+ * @param clientId The client ID to look up
+ * @param context The function invocation context
+ * @returns Client data object or null if not found
+ */
+async function getClientDataFromDataverse(clientId: string, context: InvocationContext): Promise<any> {
+    // Environment variables - store these in your Azure Function Configuration
+    const tenantId = process.env.TENANT_ID;
+    const appId = process.env.APPLICATION_ID;
+    const clientSecret = process.env.CLIENT_SECRET;
+    const dataverseUrl = process.env.DATAVERSE_URL; // e.g., https://yourorg.crm.dynamics.com
+    const entityName = process.env.ENTITY_NAME || "contacts"; // The table/entity name in Dataverse
+    const clientIdField = process.env.CLIENT_ID_FIELD || "contactid"; // Field that contains the client ID
+
+    if (!tenantId || !appId || !clientSecret || !dataverseUrl) {
+        throw new Error("Missing required environment variables for Dataverse connection");
+    }
+
+    // Create the token acquisition function
+    const acquireToken = async () => {
+        try {
+            const credential = new ClientSecretCredential(tenantId, appId, clientSecret);
+            const tokenResponse = await credential.getToken(`${dataverseUrl}/.default`);
+            return tokenResponse.token;
+        } catch (error) {
+            context.error("Error acquiring token:", error);
+            throw error;
+        }
+    };
+
+    // Initialize DynamicsWebApi with proper configuration
+    const dynamicsWebApi = new DynamicsWebApi({
+        serverUrl: dataverseUrl,
+        onTokenRefresh: acquireToken,
+        dataApi: {
+            version: "9.2"  // Using Web API v9.2
+        }
+    });
+
+    try {
+        // Query for the client record
+        const result = await dynamicsWebApi.retrieveMultiple({
+            collection: entityName,
+            filter: `${clientIdField} eq ${clientId}`,
+            select: ["*"]  // Select all fields - modify as needed for specific fields
+        });
+        
+        // Return the first record if found
+        if (result?.value && result.value.length > 0) {
+            return result.value[0];
+        }
+        
+        return null;
+    } catch (error) {
+        context.error("Error querying Dataverse:", error);
+        throw error;
+    }
+}
+
+// Register the function with Azure Functions
+app.http('validateSubscription', {
+    methods: ['POST'],
+    authLevel: 'anonymous',
+    handler: validateSubscription
 });
