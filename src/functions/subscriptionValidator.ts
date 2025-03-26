@@ -30,8 +30,8 @@ async function validateSubscription(request: HttpRequest, context: InvocationCon
 
     try {
         // Get Dataverse data
-        const clientData = await getClientDataFromDataverse(clientId, context);
-        
+        // const clientData = await getClientDataFromDataverse(clientId, context);
+        const clientData = "";
         if (!clientData) {
             return {
                 status: 404,
