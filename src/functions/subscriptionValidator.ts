@@ -114,6 +114,7 @@ async function getClientDataFromDataverse(clientId: string, context: InvocationC
 // Register the function with Azure Functions
 app.http('validateSubscription', {
     methods: ['POST'],
+    route: 'subscription/validatortest',
     authLevel: 'anonymous',
     handler: validateSubscription
 });
