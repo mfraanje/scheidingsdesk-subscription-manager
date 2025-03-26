@@ -30,8 +30,8 @@ async function validateSubscription(request: HttpRequest, context: InvocationCon
 
     try {
         // Get Dataverse data
-        // const clientData = await getClientDataFromDataverse(clientId, context);
-        const clientData = "";
+        const clientData = await getClientDataFromDataverse(clientId, context);
+        
         if (!clientData) {
             return {
                 status: 404,
@@ -119,7 +119,7 @@ async function getClientDataFromDataverse(clientId: string, context: InvocationC
 // Register the function with Azure Functions
 app.http('validateSubscription', {
     methods: ['POST'],
-    route: 'subscription/validatortest',
+    route: 'subscription/validator',
     authLevel: 'anonymous',
     handler: validateSubscription
 });
