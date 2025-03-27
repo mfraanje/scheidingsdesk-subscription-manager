@@ -111,9 +111,10 @@ async function getClientDataFromDataverse(clientId: string, context: InvocationC
 
     try {
         // Query for the client record
-        const result = await dynamicsWebApi.retrieve({
+        const result = await dynamicsWebApi.retrieveMultiple({
             collection: entityName,
-            select: [clientIdField, "subscription"]  // Select all fields - modify as needed for specific fields
+            filter: `${clientIdField} eq ${clientId}`,
+            select: ["*"]  // Select all fields - modify as needed for specific fields
         });
         
         // Return the first record if found
