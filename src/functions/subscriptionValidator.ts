@@ -67,18 +67,25 @@ async function getClientDataFromDataverse(clientId: string, context: InvocationC
     const tenantId = process.env.TENANT_ID;
     const appId = process.env.APPLICATION_ID;
     const clientSecret = process.env.CLIENT_SECRET;
-    const dataverseUrl = process.env.DATAVERSE_URL; // e.g., https://yourorg.crm.dynamics.com
+    let dataverseUrl = process.env.DATAVERSE_URL; // e.g., https://yourorg.crm.dynamics.com
     const entityName = process.env.ENTITY_NAME || "contacts"; // The table/entity name in Dataverse
     const clientIdField = process.env.CLIENT_ID_FIELD || "contactid"; // Field that contains the client ID
 
-    context.log('Environment variables:');
-    context.log(`TENANT_ID: ${process.env.TENANT_ID || 'not set'}`);
-    context.log(`APPLICATION_ID: ${process.env.APPLICATION_ID || 'not set'}`);
-    context.log(`CLIENT_SECRET: ${!!process.env.CLIENT_SECRET || 'not set'}`);
-    context.log(`DATAVERSE_URL: ${process.env.DATAVERSE_URL || 'not set'}`);
-
     if (!tenantId || !appId || !clientSecret || !dataverseUrl) {
         throw new Error("Missing required environment variables for Dataverse connection");
+    }
+
+        // If URL doesn't start with https://, add it
+    if (!dataverseUrl.startsWith("https://")) {
+        dataverseUrl = `https://${dataverseUrl}`;
+    }
+    
+    // Make sure the URL is valid
+    try {
+        new URL(dataverseUrl);
+    } catch (e) {
+        context.error(`Invalid Dataverse URL format: ${dataverseUrl}`);
+        throw new Error(`Invalid Dataverse URL: ${dataverseUrl}. Please provide a valid URL like "https://yourorg.crm.dynamics.com"`);
     }
 
     // Create the token acquisition function
