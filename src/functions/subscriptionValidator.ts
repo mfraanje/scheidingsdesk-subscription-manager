@@ -113,7 +113,7 @@ async function getClientDataFromDataverse(clientId: string, context: InvocationC
         // Query for the client record
         const result = await dynamicsWebApi.retrieveMultiple({
             collection: entityName,
-            filter: `${clientIdField} eq ${clientId}`,
+            filter: `${clientIdField} eq '${clientId}'`,
             select: ["*"]  // Select all fields - modify as needed for specific fields
         });
         
