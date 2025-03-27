@@ -70,6 +70,8 @@ async function getClientDataFromDataverse(clientId: string, context: InvocationC
     let dataverseUrl = process.env.DATAVERSE_URL; // e.g., https://yourorg.crm.dynamics.com
     const entityName = process.env.ENTITY_NAME || "contacts"; // The table/entity name in Dataverse
     const clientIdField = process.env.CLIENT_ID_FIELD || "contactid"; // Field that contains the client ID
+    const subscriptionField = process.env.SUBSCRIPTION_FIELD || "contactid"; // Field that contains the client ID
+
 
     if (!tenantId || !appId || !clientSecret || !dataverseUrl) {
         throw new Error("Missing required environment variables for Dataverse connection");
@@ -114,7 +116,7 @@ async function getClientDataFromDataverse(clientId: string, context: InvocationC
         const result = await dynamicsWebApi.retrieveMultiple({
             collection: entityName,
             filter: `${clientIdField} eq '${clientId}'`,
-            select: ["*"]  // Select all fields - modify as needed for specific fields
+            select: [clientIdField, subscriptionField]  // Select all fields - modify as needed for specific fields
         });
         
         // Return the first record if found
