@@ -71,6 +71,12 @@ async function getClientDataFromDataverse(clientId: string, context: InvocationC
     const entityName = process.env.ENTITY_NAME || "contacts"; // The table/entity name in Dataverse
     const clientIdField = process.env.CLIENT_ID_FIELD || "contactid"; // Field that contains the client ID
 
+    context.log('Environment variables:');
+    context.log(`TENANT_ID: ${process.env.TENANT_ID || 'not set'}`);
+    context.log(`APPLICATION_ID: ${process.env.APPLICATION_ID || 'not set'}`);
+    context.log(`CLIENT_SECRET: ${!!process.env.CLIENT_SECRET || 'not set'}`);
+    context.log(`DATAVERSE_URL: ${process.env.DATAVERSE_URL || 'not set'}`);
+
     if (!tenantId || !appId || !clientSecret || !dataverseUrl) {
         throw new Error("Missing required environment variables for Dataverse connection");
     }
