@@ -28,7 +28,6 @@ async function validateSubscription(request: HttpRequest, context: InvocationCon
         };
     }
 
-    try {
         // Get Dataverse data
         const clientData = await getClientDataFromDataverse(clientId, context);
         
@@ -44,16 +43,7 @@ async function validateSubscription(request: HttpRequest, context: InvocationCon
             status: 200,
             jsonBody: clientData
         };
-    } catch (error: any) {
-        context.error('Error retrieving client data:', error);
-        return {
-            status: 500,
-            jsonBody: { 
-                error: "An error occurred while retrieving client data",
-                details: error.message
-            }
-        };
-    }
+    
 }
 
 /**
