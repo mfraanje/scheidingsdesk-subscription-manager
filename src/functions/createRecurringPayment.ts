@@ -60,7 +60,7 @@ async function createRecurringPayment(request: HttpRequest, context: InvocationC
             times: 12,
             interval: '1 days',
             startDate: startDateShort,
-            description: 'Recurring payment',
+            description: `Recurring payment for customer ${customerId}`,
             webhookUrl: recurringPaymentWebhook
         });
         
@@ -101,9 +101,13 @@ async function checkExistingSubscription(customerId: string, mollieClient: any, 
 try {
     const existingSubscriptions = await mollieClient.customerSubscriptions.list({ customerId: customerId as string });
     
+    if(!existingSubscriptions) {
+        context.log(`No existing subscriptions found for customer ${customerId}`);
+        return;
+    }
     // Check if a subscription with the same description exists
-    const existingSubscription = existingSubscriptions.items.find((sub: any) => 
-        sub.description === 'Recurring payment');
+    const existingSubscription = existingSubscriptions.find((sub: any) => 
+        sub.description === `Recurring payment for customer ${customerId}`);
     
     if (existingSubscription) {
         context.log(`Subscription already exists for customer ${customerId}`);
@@ -124,11 +128,10 @@ try {
     // Log error but continue with creation attempt if check fails
     context.log("Error checking existing subscriptions:", error);
 }
-
 }
 
 // Register the function with Azure Functions
-app.http('recurringPaymentcreator', {
+app.http('createRecurringPayment', {
     methods: ['POST'],
     route: 'subscription/recurring/payments/webhook',
     authLevel: 'anonymous',

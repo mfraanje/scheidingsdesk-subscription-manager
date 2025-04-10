@@ -58,7 +58,7 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         
         const searchResult = await dynamicsWebApi.retrieveMultiple({
             collection: entityName,
-            select: [`${entityName}id`], // Get the primary key of the entity
+            select: [clientIdField], // Get the primary key of the entity
             filter: filter
         });
         
