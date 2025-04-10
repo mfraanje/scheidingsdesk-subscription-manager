@@ -88,7 +88,7 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         context.error("Error updating record in Dataverse:", error);
         throw error;
     }
-}
+}  
 
 
 export async function writeCustomerToDataverse(customerId: string, email: string, context: InvocationContext) {
