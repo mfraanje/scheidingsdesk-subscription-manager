@@ -45,7 +45,7 @@ async function createRecurringPayment(request: HttpRequest, context: InvocationC
         
         const customerId = payment.customerId;
         
-        await checkExistingSubscription(customerId as string, context);
+        await checkExistingSubscription(customerId as string, mollieClient, context);
         // Set up subscription (your existing code)
         const startDate = new Date();
         startDate.setDate(startDate.getDate() + 30);
@@ -102,7 +102,7 @@ try {
     const existingSubscriptions = await mollieClient.customerSubscriptions.list({ customerId: customerId as string });
     
     // Check if a subscription with the same description exists
-    const existingSubscription = existingSubscriptions.items.find(sub => 
+    const existingSubscription = existingSubscriptions.items.find((sub: any) => 
         sub.description === 'Recurring payment');
     
     if (existingSubscription) {
