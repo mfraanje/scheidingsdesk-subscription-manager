@@ -76,9 +76,10 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         updateData[subscriptionField] = status;
         
         // Update the record
-        const updateResult = await dynamicsWebApi.upsert({
+        const updateResult = await dynamicsWebApi.update({
             collection: entityName,
             key: recordId,
+            bypassCustomPluginExecution: true,
             data: updateData
         });
         
@@ -140,7 +141,7 @@ export async function writeCustomerToDataverse(customerId: string, email: string
         
         
         // Create the record in Dataverse
-        const createResult = await dynamicsWebApi.upsert({
+        const createResult = await dynamicsWebApi.create({
             collection: entityName,
             data: record
         });
