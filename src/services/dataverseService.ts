@@ -50,23 +50,40 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         dataApi: {
             version: "9.2"  // Using Web API v9.2
         }
-    });
+    }); 
 
     try {
-        // Prepare the record to be created in Dataverse
-        const record: Record<string, any> = {};
-        record[clientIdField] = customerId;
-        record[subscriptionField] = status;
+        // First, find the contact by email
+        const filter = `${clientIdField} eq '${customerId}'`;
         
-        
-        // Create the record in Dataverse
-        const createResult = await dynamicsWebApi.update({
+        const searchResult = await dynamicsWebApi.retrieveMultiple({
             collection: entityName,
-            data: record
+            select: [`${entityName}id`], // Get the primary key of the entity
+            filter: filter
         });
         
-        context.log(`Successfully updated subscription status in Dataverse with ID: ${createResult}`);
-        return createResult;
+        // Check if contact was found
+        if (!searchResult.value || searchResult.value.length === 0) {
+            context.log(`No contact found with id: ${clientIdField}`);
+            throw new Error(`No contact found with id: ${clientIdField}`);
+        }
+        
+        // Get the record ID
+        const recordId = searchResult.value[0][`${entityName}id`];
+        
+        // Update the record with new subscription status and customer ID
+        const updateData: Record<string, any> = {};
+        updateData[subscriptionField] = status;
+        
+        // Update the record
+        const updateResult = await dynamicsWebApi.update({
+            collection: entityName,
+            key: recordId,
+            data: updateData
+        });
+        
+        context.log(`Successfully updated subscription status for contact with id: ${clientIdField}`);
+        return updateResult;
     } catch (error) {
         context.error("Error updating record in Dataverse:", error);
         throw error;
