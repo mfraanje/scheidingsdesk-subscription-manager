@@ -38,22 +38,22 @@ export async function updateDataverseSubscription(customerId: string, status: bo
     }
 
     // Create the token acquisition function
-    const acquireToken = async () => {
-        try {
-            const credential = new ClientSecretCredential(tenantId, appId, clientSecret);
-            const tokenResponse = await credential.getToken(`${dataverseUrl}/.default`);
-            return tokenResponse.token;
-        } catch (error) {
-            context.error("Error acquiring token:", error);
-            throw error;
-        }
-    };
+    // const acquireToken = async () => {
+    //     try {
+    //         const credential = new ClientSecretCredential(tenantId, appId, clientSecret);
+    //         const tokenResponse = await credential.getToken(`${dataverseUrl}/.default`);
+    //         return tokenResponse.token;
+    //     } catch (error) {
+    //         context.error("Error acquiring token:", error);
+    //         throw error;
+    //     }
+    // };
 
     // Initialize DynamicsWebApi with proper configuration
-    const dynamicsWebApi = new DynamicsWebApi({
-        serverUrl: dataverseUrl,
-        onTokenRefresh: acquireToken
-    }); 
+    // const dynamicsWebApi = new DynamicsWebApi({
+    //     serverUrl: dataverseUrl,
+    //     onTokenRefresh: acquireToken
+    // }); 
 
     
         
@@ -61,44 +61,44 @@ export async function updateDataverseSubscription(customerId: string, status: bo
     try {
         const config = new WebApiConfig('9.1', dataverseUrl);
 
-        const response = await updateProperty(config, entityName, 'test', subscriptionField, true)
+        await updateProperty(config, entityName, 'test', subscriptionField, true)
         .then(() => {
             // do something
         }, (error: any) => {
             console.log(error);
         });
-    //     // First, find the contact by email
-    //     const filter = `${clientIdField} eq '${customerId}'`;
+        // First, find the contact by email
+        // const filter = `${clientIdField} eq '${customerId}'`;
         
-    //     const searchResult = await dynamicsWebApi.retrieveMultiple({
-    //         collection: entityName,
-    //         select: [clientIdField], // Get the primary key of the entity
-    //         filter: filter
-    //     });
+        // const searchResult = await dynamicsWebApi.retrieveMultiple({
+        //     collection: entityName,
+        //     select: [clientIdField], // Get the primary key of the entity
+        //     filter: filter
+        // });
         
-    //     // Check if contact was found
-    //     if (!searchResult.value || searchResult.value.length === 0) {
-    //         context.log(`No contact found with id: ${customerId}`);
-    //         throw new Error(`No contact found with id: ${customerId}`);
-    //     }
+        // // Check if contact was found
+        // if (!searchResult.value || searchResult.value.length === 0) {
+        //     context.log(`No contact found with id: ${customerId}`);
+        //     throw new Error(`No contact found with id: ${customerId}`);
+        // }
         
-    //     // Get the record ID
-    //     const recordId = searchResult.value[0].id || searchResult.value[0][`${entityName}id`];
+        // // Get the record ID
+        // const recordId = searchResult.value[0].id || searchResult.value[0][`${entityName}id`];
         
-    //     // Update the record with new subscription status and customer ID
-    //     const updateData: Record<string, any> = {};
-    //     updateData[subscriptionField] = status;
+        // Update the record with new subscription status and customer ID
+        const updateData: Record<string, any> = {};
+        updateData[subscriptionField] = status;
         
-    //     // Update the record
-    //     const updateResult = await dynamicsWebApi.update({
-    //         collection: entityName,
-    //         bypassCustomPluginExecution: true,
-    //         data: updateData
-    //     });
+        // // Update the record
+        // const updateResult = await dynamicsWebApi.update({
+        //     collection: entityName,
+        //     bypassCustomPluginExecution: true,
+        //     data: updateData
+        // });
         
-    //     context.log(`Successfully updated subscription status for contact with id: ${clientIdField}`);
-    //     return updateResult;
-    return response;
+        // context.log(`Successfully updated subscription status for contact with id: ${clientIdField}`);
+        // return updateResult;
+    return updateData;
     } catch (error) {
         context.error("Error updating record in Dataverse:", error);
         throw error;
