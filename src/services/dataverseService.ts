@@ -1,5 +1,6 @@
 import type { InvocationContext } from "@azure/functions";
 import { ClientSecretCredential } from "@azure/identity";
+import { updateProperty, WebApiConfig } from "dataverse-webapi";
 import { DynamicsWebApi } from "dynamics-web-api";
 
 const tenantId = process.env.TENANT_ID;
@@ -58,38 +59,46 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         
 
     try {
-       
-        // First, find the contact by email
-        const filter = `${clientIdField} eq '${customerId}'`;
-        
-        const searchResult = await dynamicsWebApi.retrieveMultiple({
-            collection: entityName,
-            select: [clientIdField], // Get the primary key of the entity
-            filter: filter
+        const config = new WebApiConfig('9.1', dataverseUrl);
+
+        const response = await updateProperty(config, entityName, 'test', subscriptionField, true)
+        .then(() => {
+            // do something
+        }, (error: any) => {
+            console.log(error);
         });
+    //     // First, find the contact by email
+    //     const filter = `${clientIdField} eq '${customerId}'`;
         
-        // Check if contact was found
-        if (!searchResult.value || searchResult.value.length === 0) {
-            context.log(`No contact found with id: ${customerId}`);
-            throw new Error(`No contact found with id: ${customerId}`);
-        }
+    //     const searchResult = await dynamicsWebApi.retrieveMultiple({
+    //         collection: entityName,
+    //         select: [clientIdField], // Get the primary key of the entity
+    //         filter: filter
+    //     });
         
-        // Get the record ID
-        const recordId = searchResult.value[0].id || searchResult.value[0][`${entityName}id`];
+    //     // Check if contact was found
+    //     if (!searchResult.value || searchResult.value.length === 0) {
+    //         context.log(`No contact found with id: ${customerId}`);
+    //         throw new Error(`No contact found with id: ${customerId}`);
+    //     }
         
-        // Update the record with new subscription status and customer ID
-        const updateData: Record<string, any> = {};
-        updateData[subscriptionField] = status;
+    //     // Get the record ID
+    //     const recordId = searchResult.value[0].id || searchResult.value[0][`${entityName}id`];
         
-        // Update the record
-        const updateResult = await dynamicsWebApi.update({
-            collection: entityName,
-            bypassCustomPluginExecution: true,
-            data: updateData
-        });
+    //     // Update the record with new subscription status and customer ID
+    //     const updateData: Record<string, any> = {};
+    //     updateData[subscriptionField] = status;
         
-        context.log(`Successfully updated subscription status for contact with id: ${clientIdField}`);
-        return updateResult;
+    //     // Update the record
+    //     const updateResult = await dynamicsWebApi.update({
+    //         collection: entityName,
+    //         bypassCustomPluginExecution: true,
+    //         data: updateData
+    //     });
+        
+    //     context.log(`Successfully updated subscription status for contact with id: ${clientIdField}`);
+    //     return updateResult;
+    return response;
     } catch (error) {
         context.error("Error updating record in Dataverse:", error);
         throw error;
