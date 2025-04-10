@@ -13,7 +13,7 @@ const WEBHOOK_URL = process.env.WEBHOOK_URL;
 
 async function initializeSubscription(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log("Processing subscription initialization request");
-    
+     
     try {
         // Parse the request body
         const requestBody: any = await request.json();
