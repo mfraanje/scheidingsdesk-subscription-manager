@@ -102,7 +102,7 @@ export async function updateDataverseSubscription(customerId: string, status: bo
     } catch (error) {
         context.error("Error updating record in Dataverse:", error);
         throw error;
-    }
+    }  
 }  
 
 
