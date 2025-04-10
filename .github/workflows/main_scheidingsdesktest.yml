@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js project to Azure Function App - Scheidingsdesktest
+name: Build and deploy Node.js project to Azure Function App - scheidingsdesktest
 
 on:
   push:
@@ -65,15 +65,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_64BF7413921A421E956520EEC5A5ADB0 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_C00FED61F51D4CD1AF8B8C7FCA18B48A }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A6633CA99F6345708CC7DD57201347DF }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A6A7D0EC02E346AC9F06A111DF688C6A }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8418D9D8066A4037B1D0E6964DB6E17E }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_817B616A6A804C1F8B6B961E0FE78D20 }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
-          app-name: 'Scheidingsdesktest'
+          app-name: 'scheidingsdesktest'
           slot-name: 'Production'
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
           
