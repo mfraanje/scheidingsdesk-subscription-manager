@@ -11,6 +11,11 @@ const clientIdField = process.env.CLIENT_ID_FIELD || "mollie_customer_id"; // Fi
 const subscriptionField = process.env.SUBSCRIPTION_FIELD || "subscription"
 const emailField = process.env.EMAIL_FIELD || "emailaddress1"; // Field that will store the email
 
+interface Account {
+    clientid?: string,
+    email: string,
+    subscription: boolean
+}
 
 export async function updateDataverseSubscription(customerId: string, status: boolean, context: InvocationContext) {
 
@@ -73,7 +78,7 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         
         // Update the record with new subscription status and customer ID
         const updateData: Record<string, any> = {};
-        updateData[subscriptionField] = status;
+        updateData[emailField] = 'Test';
         
         // Update the record
         const updateResult = await dynamicsWebApi.update({
