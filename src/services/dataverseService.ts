@@ -82,9 +82,11 @@ export async function updateDataverseSubscription(customerId: string, status: bo
             throw new Error(`No contact found with id: ${customerId}`);
         }
         
+        context.info(`List of contacts with id: ${searchResult.value}`);
+
         // // Get the record ID
         const recordId = searchResult.value[0].id || searchResult.value[0][`${entityName}id`];
-        
+        context.info(`Found contact with id: ${recordId}`);
         // Update the record with new subscription status and customer ID
         const updateData: Record<string, any> = {};
         updateData[subscriptionField] = status;
@@ -92,6 +94,7 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         // Update the record
         const updateResult = await dynamicsWebApi.update({
             collection: entityName,
+            key: recordId,
             bypassCustomPluginExecution: true,
             data: updateData
         });
