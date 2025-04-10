@@ -78,7 +78,7 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         
         // Update the record with new subscription status and customer ID
         const updateData: Record<string, any> = {};
-        updateData[emailField] = 'Test';
+        updateData[subscriptionField] = status;
         
         // Update the record
         const updateResult = await dynamicsWebApi.update({
