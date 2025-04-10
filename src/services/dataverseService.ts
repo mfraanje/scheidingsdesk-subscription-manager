@@ -51,10 +51,7 @@ export async function updateDataverseSubscription(customerId: string, status: bo
     // Initialize DynamicsWebApi with proper configuration
     const dynamicsWebApi = new DynamicsWebApi({
         serverUrl: dataverseUrl,
-        onTokenRefresh: acquireToken,
-        dataApi: {
-            version: "9.2"  // Using Web API v9.2
-        }
+        onTokenRefresh: acquireToken
     }); 
 
     try {
@@ -69,8 +66,8 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         
         // Check if contact was found
         if (!searchResult.value || searchResult.value.length === 0) {
-            context.log(`No contact found with id: ${clientIdField}`);
-            throw new Error(`No contact found with id: ${clientIdField}`);
+            context.log(`No contact found with id: ${customerId}`);
+            throw new Error(`No contact found with id: ${customerId}`);
         }
         
         // Get the record ID
@@ -83,7 +80,6 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         // Update the record
         const updateResult = await dynamicsWebApi.update({
             collection: entityName,
-            key: recordId,
             bypassCustomPluginExecution: true,
             data: updateData
         });
@@ -133,9 +129,6 @@ export async function writeCustomerToDataverse(customerId: string, email: string
     const dynamicsWebApi = new DynamicsWebApi({
         serverUrl: dataverseUrl,
         onTokenRefresh: acquireToken,
-        dataApi: {
-            version: "9.2"  // Using Web API v9.2
-        }
     });
 
     try {
