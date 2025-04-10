@@ -69,7 +69,7 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         }
         
         // Get the record ID
-        const recordId = searchResult.value[0][`${entityName}id`];
+        const recordId = searchResult.value[0].id || searchResult.value[0][`${entityName}id`];
         
         // Update the record with new subscription status and customer ID
         const updateData: Record<string, any> = {};
@@ -86,6 +86,69 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         return updateResult;
     } catch (error) {
         context.error("Error updating record in Dataverse:", error);
+        throw error;
+    }
+}
+
+
+export async function writeCustomerToDataverse(customerId: string, email: string, context: InvocationContext) {
+   
+
+    if (!tenantId || !appId || !clientSecret || !dataverseUrl) {
+        throw new Error("Missing required environment variables for Dataverse connection");
+    }
+
+    // If URL doesn't start with https://, add it
+    if (!dataverseUrl.startsWith("https://")) {
+        dataverseUrl = `https://${dataverseUrl}`;
+    }
+    
+    // Make sure the URL is valid
+    try {
+        new URL(dataverseUrl);
+    } catch (e) {
+        context.error(`Invalid Dataverse URL format: ${dataverseUrl}`);
+        throw new Error(`Invalid Dataverse URL: ${dataverseUrl}. Please provide a valid URL like "https://yourorg.crm.dynamics.com"`);
+    }
+
+    // Create the token acquisition function
+    const acquireToken = async () => {
+        try {
+            const credential = new ClientSecretCredential(tenantId, appId, clientSecret);
+            const tokenResponse = await credential.getToken(`${dataverseUrl}/.default`);
+            return tokenResponse.token;
+        } catch (error) {
+            context.error("Error acquiring token:", error);
+            throw error;
+        }
+    };
+
+    // Initialize DynamicsWebApi with proper configuration
+    const dynamicsWebApi = new DynamicsWebApi({
+        serverUrl: dataverseUrl,
+        onTokenRefresh: acquireToken,
+        dataApi: {
+            version: "9.2"  // Using Web API v9.2
+        }
+    });
+
+    try {
+        // Prepare the record to be created in Dataverse
+        const record: Record<string, any> = {};
+        record[clientIdField] = customerId;
+        record[emailField] = email;
+        
+        
+        // Create the record in Dataverse
+        const createResult = await dynamicsWebApi.create({
+            collection: entityName,
+            data: record
+        });
+        
+        context.log(`Successfully created record in Dataverse with ID: ${createResult}`);
+        return createResult;
+    } catch (error) {
+        context.error("Error creating record in Dataverse:", error);
         throw error;
     }
 }
