@@ -3,7 +3,7 @@ import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/fu
 import {updateDataverseSubscription} from '../services/dataverseService'
 import createMollieClient, { SequenceType } from '@mollie/api-client';
 
-// Mollie API configuration
+// Mollie API configuration 
 const MOLLIE_API_KEY = process.env.MOLLIE_API_KEY as string;
 const recurringPaymentAmount = process.env.RECURRING_PAYMENT_AMOUNT as string;
 const recurringPaymentWebhook = process.env.RECURRING_PAYMENT_WEBHOOK as string;
