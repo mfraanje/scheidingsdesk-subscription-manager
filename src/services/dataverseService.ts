@@ -7,9 +7,10 @@ const tenantId = process.env.TENANT_ID;
 const appId = process.env.APPLICATION_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 let dataverseUrl = process.env.DATAVERSE_URL; // e.g., https://yourorg.crm.dynamics.com
-const entityName = process.env.ENTITY_NAME || "contacts"; // The table/entity name in Dataverse
+const entityName = process.env.ENTITY_NAME || "accounts";
+const entityNameSingular = process.env.ENTITY_NAME_SINGULAR || "account";
 const clientIdField = process.env.CLIENT_ID_FIELD || "mollie_customer_id"; // Field that will store the Mollie customer ID
-const subscriptionField = process.env.SUBSCRIPTION_FIELD || "subscription"
+const subscriptionField = process.env.SUBSCRIPTION_FIELD || "subscription"; 
 const emailField = process.env.EMAIL_FIELD || "emailaddress1"; // Field that will store the email
 
 interface Account {
@@ -19,8 +20,6 @@ interface Account {
 }
 
 export async function updateDataverseSubscription(customerId: string, status: boolean, context: InvocationContext) {
-
-
     if (!tenantId || !appId || !clientSecret || !dataverseUrl) {
         throw new Error("Missing required environment variables for Dataverse connection");
     }
@@ -55,25 +54,16 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         onTokenRefresh: acquireToken
     }); 
 
-    
-        
-
     try {
-        // const config = new WebApiConfig('9.1', dataverseUrl);
-
-        // await updateProperty(config, entityName, 'test', subscriptionField, true)
-        // .then(() => {
-        //     // do something
-        // }, (error: any) => {
-        //     console.log(error);
-        // });
-        // First, find the contact by email
-        const filter = `${clientIdField} eq '${customerId}'`;
+        const primaryKeyFieldName = clientIdField; // As provided by the user
+        const actualPrimaryKeyFieldName = `${entityNameSingular}id`; // Standard convention for the GUID field
+        const filter = `${primaryKeyFieldName} eq '${customerId}'`;
         
         const searchResult = await dynamicsWebApi.retrieveMultiple({
-            collection: entityName,
-            select: [clientIdField], // Get the primary key of the entity
-            filter: filter
+          collection: entityName,
+          // Select the field used for filtering AND the actual primary key (GUID) field
+          select: [primaryKeyFieldName, actualPrimaryKeyFieldName],
+          filter: filter,
         });
         
         // // Check if contact was found
@@ -85,17 +75,23 @@ export async function updateDataverseSubscription(customerId: string, status: bo
         context.info(`List of contacts with id: ${searchResult.value}`);
 
         // // Get the record ID
-        const recordId = searchResult.value[0].id || searchResult.value[0][`${entityName}id`];
-        context.info(`Found contact with id: ${recordId}`);
+        const recordGuid = searchResult.value[0][actualPrimaryKeyFieldName]; // Extract the GUID
+        context.info(`Found contact with PK Field '${primaryKeyFieldName}' value '${searchResult.value[0][primaryKeyFieldName]}' and GUID '${recordGuid}'`);
         // Update the record with new subscription status and customer ID
-        const updateData: Record<string, any> = {};
-        updateData[subscriptionField] = status;
+        const updateData: Record<string, unknown> = {};
+        updateData[subscriptionField] = status; 
         
+        // --- Add logging here ---
+        context.log('Attempting update:');
+        context.log(`  Collection: ${entityName}`);
+        context.log(`  Key (GUID): ${recordGuid}`); // Log the GUID being used
+        context.log(`  Data: ${JSON.stringify(updateData)}`);
+        // --- End logging ---
+
         // Update the record
-        const updateResult = await dynamicsWebApi.update({
+        const updateResult = await dynamicsWebApi.update({ 
             collection: entityName,
-            key: recordId,
-            bypassCustomPluginExecution: true,
+            key: recordGuid, // Use the actual GUID as the key
             data: updateData
         });
         
@@ -148,7 +144,7 @@ export async function writeCustomerToDataverse(customerId: string, email: string
 
     try {
         // Prepare the record to be created in Dataverse
-        const record: Record<string, any> = {};
+        const record: Record<string, unknown> = {};
         record[clientIdField] = customerId;
         record[emailField] = email;
         
