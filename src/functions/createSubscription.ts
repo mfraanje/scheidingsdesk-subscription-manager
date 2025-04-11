@@ -1,6 +1,6 @@
 import { app } from "@azure/functions";
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import {updateDataverseSubscription} from '../services/dataverseService'
+import {addDataverseSubscription} from '../services/dataverseService'
 import createMollieClient, { SequenceType } from '@mollie/api-client';
 
 // Mollie API configuration 
@@ -9,7 +9,7 @@ const recurringPaymentAmount = process.env.RECURRING_PAYMENT_AMOUNT as string;
 const recurringPaymentWebhook = process.env.RECURRING_PAYMENT_WEBHOOK as string;
 
 
-async function createRecurringPayment(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+async function createSubscription(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     try {
         context.log("Creating recurring payment");
         
@@ -65,11 +65,14 @@ async function createRecurringPayment(request: HttpRequest, context: InvocationC
         });
         
         let status = false;
+        context.info(`${recurringPaymentResponse}`);
+        context.info(`Recurring payment created with ID: ${recurringPaymentResponse.id}`);
+
         if (recurringPaymentResponse.status === "active") {
             status = true;
         }
         
-        await updateDataverseSubscription(customerId as string, status, context);
+        await addDataverseSubscription(customerId as string, recurringPaymentResponse.id, status, context);
         
         // Return success
         return {
@@ -131,9 +134,9 @@ try {
 }
 
 // Register the function with Azure Functions
-app.http('createRecurringPayment', {
+app.http('createSubscription', {
     methods: ['POST'],
     route: 'subscription/recurring/payments/webhook',
     authLevel: 'anonymous',
-    handler: createRecurringPayment
+    handler: createSubscription
 });

@@ -6,7 +6,7 @@ export async function dataverseTest(
     req: HttpRequest,
     context: InvocationContext
 ): Promise<any> {
-    await updateDataverseSubscription("test", true, context);
+    await updateDataverseSubscription("test", 'f123456', true, context);
     return {
         body: true 
     };
