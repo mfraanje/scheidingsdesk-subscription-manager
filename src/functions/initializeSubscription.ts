@@ -41,7 +41,7 @@ async function initializeSubscription(request: HttpRequest, context: InvocationC
 
          // Write customer data to Dataverse
          try {
-            await writeCustomerToDataverse(customer.id, customer.email, context);
+            await writeCustomerToDataverse(customer.id, customer.email);
             context.log(`Successfully wrote customer data to Dataverse: ${customer.id}`);
         } catch (dataverseError) {
             context.error("Error writing to Dataverse:", dataverseError);
