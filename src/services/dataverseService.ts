@@ -81,7 +81,7 @@ export async function updateDataverseSubscription(customerId: string, subscripti
           select: [primaryKeyFieldName, actualPrimaryKeyFieldName],
           filter: filter,
         });
-        
+         
         // // Check if contact was found
         if (!searchResult.value || searchResult.value.length === 0) {
             context.log(`No contact found with id: ${customerId}`);
