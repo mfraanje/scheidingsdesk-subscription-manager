@@ -1,6 +1,6 @@
 import { app } from "@azure/functions";
 import type { HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import {addDataverseSubscription} from '../services/dataverseService'
+import {addDataverseSubscription, updateDataverseSubscription} from '../services/dataverseService'
 import createMollieClient, { SequenceType } from '@mollie/api-client';
 
 // Mollie API configuration 
@@ -117,7 +117,7 @@ try {
         
         // Update Dataverse with existing subscription status
         const status = existingSubscription.status === "active";
-        await updateDataverseSubscription(customerId as string, status, context);
+        await updateDataverseSubscription(customerId as string, existingSubscription.id, status, context);
         
         return {
             status: 200,
