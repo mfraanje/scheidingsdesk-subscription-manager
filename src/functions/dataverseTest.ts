@@ -10,7 +10,7 @@ export async function dataverseTest(
     return {
         body: true 
     };
-}
+}    
 
 app.http('dataverseTest', {
     route: 'test',

@@ -57,7 +57,7 @@ async function createSubscription(request: HttpRequest, context: InvocationConte
                 currency: 'EUR',
                 value: recurringPaymentAmount
             },
-            times: 12,
+            times: 1,
             interval: '1 days',
             startDate: startDateShort,
             description: `Recurring payment for customer ${customerId}`,

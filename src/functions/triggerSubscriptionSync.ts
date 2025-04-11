@@ -15,7 +15,7 @@ async function triggerSubscriptionSync() {
 
 // --- Register the Timer Function ---
 app.timer('triggerSubscriptionSync', {
-  schedule: '0 */1 * * * *', 
+  schedule: '0 0 7 * * *', // Every day at 7 AM
   runOnStartup: true,        // Set to false if you don't want it to run immediately on deploy/restart
   handler: triggerSubscriptionSync,
 });
