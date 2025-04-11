@@ -34,6 +34,7 @@ async function syncDataverseSubscriptionStatus(request: HttpRequest, context: In
             const mollieSubscriptionId = record[subscriptionIdField];
             const customerSubscriptionId = record[clientIdField];
 
+            context.info(`Processing record GUID: ${recordGuid}, Mollie Subscription ID: ${mollieSubscriptionId}, Customer ID: ${customerSubscriptionId}`);
 
             if (!recordGuid || !mollieSubscriptionId) {
                 context.warn(`Skipping record due to missing GUID or Subscription ID. GUID: ${recordGuid}, Subscription ID: ${mollieSubscriptionId}`);
