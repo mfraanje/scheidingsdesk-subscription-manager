@@ -136,6 +136,37 @@ export async function writeCustomerToDataverse(customerId: string, email: string
     }
 }
 
+
+export async function getClientDataFromDataverse(context: InvocationContext) {
+    const dynamicsWebApi = await initializeContext(context);
+    const actualPrimaryKeyFieldName = `${entityNameSingular}id`; // Standard convention for the GUID field
+
+    console.log(`Workspaceing records from Dataverse entity: ${entityName}`);
+    
+        // 2. Fetch Records from Dataverse that have a Subscription ID
+        // Select the actual primary key (GUID) and the subscription ID field
+        // Filter for records where the subscription ID field is not null
+        const retrieveOptions = {
+            collection: entityName,
+            select: [actualPrimaryKeyFieldName, subscriptionIdField],
+            filter: `${subscriptionIdField} ne null`,
+        };
+    
+        // Handle potential pagination if you have many records
+        let records: any[] = [];
+        let result = await dynamicsWebApi.retrieveMultiple(retrieveOptions);
+        records = records.concat(result.value);
+    
+        while (result["@odata.nextLink"]) {
+            console.log("Fetching next page of Dataverse records...");
+            result = await dynamicsWebApi.retrieveMultiple(retrieveOptions, result["@odata.nextLink"]);
+            records = records.concat(result.value);
+        }
+    
+        console.log(`Retrieved ${records.length} records from Dataverse with a subscription ID.`);
+        return records;
+}
+
 async function initializeContext(context: InvocationContext) {
     if (!tenantId || !appId || !clientSecret || !dataverseUrl) {
         throw new Error("Missing required environment variables for Dataverse connection");

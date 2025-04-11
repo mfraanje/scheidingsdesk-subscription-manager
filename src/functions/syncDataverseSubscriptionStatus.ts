@@ -1,7 +1,7 @@
 import { app } from "@azure/functions";
 import type { HttpRequest, HttpResponseInit, InvocationContext, Timer } from "@azure/functions";
 import createMollieClient, { SubscriptionStatus } from '@mollie/api-client'; // Import SubscriptionStatus
-import type { DynamicsWebApi } from "dynamics-web-api";
+import { getClientDataFromDataverse, updateDataverseSubscription } from "../services/dataverseService";
 
 // --- Environment Variables (Keep as they are) ---
 const MOLLIE_API_KEY = process.env.MOLLIE_API_KEY as string;
@@ -17,44 +17,16 @@ async function syncDataverseSubscriptionStatus(request: HttpRequest, context: In
 
     if (!MOLLIE_API_KEY) {
         context.error("MOLLIE_API_KEY environment variable is not set.");
-        return; // Exit if Mollie key is missing
-    }
-
-    let dynamicsWebApi: DynamicsWebApi;
-    try {
-        // 1. Initialize Dataverse Context
-        dynamicsWebApi = await initializeContext(context);
-    } catch (error) {
-        context.error("Failed to initialize Dataverse context:", error);
-        return; // Exit if Dataverse connection fails
+        return { status: 500, body: JSON.stringify({ error: "MOLLIE_API_KEY environment variable is not set." })
+        }; 
+         // Exit if Mollie key is missing
     }
 
     const mollieClient = createMollieClient({ apiKey: MOLLIE_API_KEY });
     const actualPrimaryKeyFieldName = `${entityNameSingular}id`; // Standard convention for the GUID field
 
     try {
-        context.log(`Workspaceing records from Dataverse entity: ${entityName}`);
-
-        // 2. Fetch Records from Dataverse that have a Subscription ID
-        // Select the actual primary key (GUID) and the subscription ID field
-        // Filter for records where the subscription ID field is not null
-        const retrieveOptions = {
-            collection: entityName,
-            select: [actualPrimaryKeyFieldName, subscriptionIdField],
-            filter: `${subscriptionIdField} ne null`,
-        };
-
-        // Handle potential pagination if you have many records
-        let records: any[] = [];
-        let result = await dynamicsWebApi.retrieveMultiple(retrieveOptions);
-        records = records.concat(result.value);
-
-        while (result["@odata.nextLink"]) {
-            context.log("Fetching next page of Dataverse records...");
-            result = await dynamicsWebApi.retrieveMultiple(retrieveOptions, result["@odata.nextLink"]);
-            records = records.concat(result.value);
-        }
-
+        const records = await getClientDataFromDataverse(context);
         context.log(`Retrieved ${records.length} records from Dataverse with a subscription ID.`);
 
         // 3. Iterate through Dataverse Records and Check Mollie Status
@@ -83,11 +55,7 @@ async function syncDataverseSubscriptionStatus(request: HttpRequest, context: In
                 const updateData: Record<string, unknown> = {};
                 updateData[subscriptionField] = isMollieActive; // Set boolean field
 
-                await dynamicsWebApi.update({
-                    collection: entityName,
-                    key: recordGuid, // Use the actual GUID
-                    data: updateData
-                });
+                await updateDataverseSubscription(customerSubscriptionId, mollieSubscriptionId, isMollieActive, context);
                 context.log(`Successfully updated Dataverse record ${recordGuid}`);
 
             } catch (mollieError: any) {
@@ -98,18 +66,13 @@ async function syncDataverseSubscriptionStatus(request: HttpRequest, context: In
                      const updateData: Record<string, unknown> = {};
                      updateData[subscriptionField] = false;
                      try {
-                        await dynamicsWebApi.update({
-                            collection: entityName,
-                            key: recordGuid,
-                            data: updateData
-                        });
+                        await updateDataverseSubscription(customerSubscriptionId, mollieSubscriptionId, false, context);
                         context.log(`Set Dataverse record ${recordGuid} subscription status to false as Mollie subscription was not found.`);
                      } catch (updateError) {
                         context.error(`Failed to update Dataverse record ${recordGuid} after Mollie 404 error:`, updateError);
                      }
                  } else {
                     context.error(`Error processing Mollie subscription ${mollieSubscriptionId} for Dataverse record ${recordGuid}:`, mollieError);
-                    // Decide if you want to skip this record or stop the process
                  }
             }
         }
@@ -122,6 +85,7 @@ async function syncDataverseSubscriptionStatus(request: HttpRequest, context: In
 
     } catch (error) {
         context.error('Error during syncDataverseSubscriptionStatus execution:', error);
+        throw error;
     }
 }
 
