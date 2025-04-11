@@ -1,5 +1,5 @@
 import { app } from "@azure/functions";
-import type { InvocationContext, Timer } from "@azure/functions";
+import type { HttpRequest, HttpResponseInit, InvocationContext, Timer } from "@azure/functions";
 import createMollieClient, { SubscriptionStatus } from '@mollie/api-client'; // Import SubscriptionStatus
 import type { DynamicsWebApi } from "dynamics-web-api";
 
@@ -12,7 +12,7 @@ const subscriptionField = process.env.SUBSCRIPTION_FIELD || "subscription";
 const subscriptionIdField = process.env.SUBSCRIPTION_ID_FIELD || "subscriptionId";
 
 
-async function syncDataverseSubscriptionStatus(context: InvocationContext) {
+async function syncDataverseSubscriptionStatus(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
     context.log('syncDataverseSubscriptionStatus function started');
 
     if (!MOLLIE_API_KEY) {
@@ -115,19 +115,19 @@ async function syncDataverseSubscriptionStatus(context: InvocationContext) {
         }
 
         context.log('syncDataverseSubscriptionStatus function finished successfully.');
+         return {
+            status: 200,
+            jsonBody: true
+        };
 
     } catch (error) {
         context.error('Error during syncDataverseSubscriptionStatus execution:', error);
     }
 }
 
-// --- Register the Timer Function ---
-app.timer('syncDataverseSubscriptionStatus', {
-  schedule: '0 */5 * * * *', // Changed to every 5 minutes - adjust as needed
-  runOnStartup: true,        // Set to false if you don't want it to run immediately on deploy/restart
-  handler: async () => {syncDataverseSubscriptionStatus},
+app.http('syncDataverseSubscriptionStatus', {
+    methods: ['POST'],
+    route: 'subscription/sync',
+    authLevel: 'anonymous',
+    handler: syncDataverseSubscriptionStatus
 });
-function initializeContext(context: InvocationContext): DynamicsWebApi | PromiseLike<DynamicsWebApi> {
-    throw new Error("Function not implemented.");
-}
-
