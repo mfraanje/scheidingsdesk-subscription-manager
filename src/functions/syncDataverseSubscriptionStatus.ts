@@ -5,7 +5,6 @@ import { getClientDataFromDataverse, updateDataverseSubscription } from "../serv
 
 // --- Environment Variables (Keep as they are) ---
 const MOLLIE_API_KEY = process.env.MOLLIE_API_KEY as string;
-const entityName = process.env.ENTITY_NAME || "accounts";
 const entityNameSingular = process.env.ENTITY_NAME_SINGULAR || "account";
 const clientIdField = process.env.CLIENT_ID_FIELD || "mollie_customer_id"; // Field that stores the Mollie customer ID
 const subscriptionField = process.env.SUBSCRIPTION_FIELD || "subscription";
