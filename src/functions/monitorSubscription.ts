@@ -19,6 +19,6 @@ async function monitorSubscription() {
 
 // Register the function with Azure Functions
 app.timer('monitorSubscription', {
-  schedule: '0 0 7 * * *',
+  schedule: '0 */1 * * * *',
   handler: monitorSubscription
 });
