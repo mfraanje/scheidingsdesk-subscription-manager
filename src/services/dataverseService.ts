@@ -148,7 +148,7 @@ export async function getClientDataFromDataverse(context: InvocationContext) {
         // Filter for records where the subscription ID field is not null
         const retrieveOptions = {
             collection: entityName,
-            select: [actualPrimaryKeyFieldName, subscriptionIdField],
+            select: [actualPrimaryKeyFieldName, subscriptionIdField, clientIdField],
             filter: `${subscriptionIdField} ne null`,
         };
     
