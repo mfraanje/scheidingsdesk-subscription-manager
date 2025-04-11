@@ -65,7 +65,7 @@ async function createSubscription(request: HttpRequest, context: InvocationConte
         });
         
         let status = false;
-        context.info(`${recurringPaymentResponse}`);
+        context.info(`Mandate with ID: ${recurringPaymentResponse.mandateId}`);
         context.info(`Recurring payment created with ID: ${recurringPaymentResponse.id}`);
 
         if (recurringPaymentResponse.status === "active") {
