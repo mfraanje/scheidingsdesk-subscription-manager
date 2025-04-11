@@ -72,7 +72,7 @@ async function createSubscription(request: HttpRequest, context: InvocationConte
             status = true;
         }
         
-        await addDataverseSubscription(customerId as string, recurringPaymentResponse.id, status);
+        await addDataverseSubscription(customerId as string, recurringPaymentResponse.id, status, context);
         
         // Return success
         return {
@@ -117,7 +117,7 @@ try {
         
         // Update Dataverse with existing subscription status
         const status = existingSubscription.status === "active";
-        await updateDataverseSubscription(customerId as string, existingSubscription.id, status);
+        await updateDataverseSubscription(customerId as string, existingSubscription.id, status, context);
         
         return {
             status: 200,
