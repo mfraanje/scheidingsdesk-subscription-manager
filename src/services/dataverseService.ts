@@ -1,3 +1,4 @@
+import type { InvocationContext } from "@azure/functions";
 import { ClientSecretCredential } from "@azure/identity";
 // import { updateProperty, WebApiConfig } from "dataverse-webapi";
 import { DynamicsWebApi } from "dynamics-web-api";
@@ -20,8 +21,8 @@ interface Account {
     subscription: boolean
 }
 
-export async function addDataverseSubscription(customerId: string, subscriptionId: string, status: boolean) {
-    const dynamicsWebApi = await initializeContext();
+export async function addDataverseSubscription(customerId: string, subscriptionId: string, status: boolean, context: InvocationContext) {
+    const dynamicsWebApi = await initializeContext(context);
 
     try {
         const primaryKeyFieldName = clientIdField; // As provided by the user
@@ -66,39 +67,8 @@ export async function addDataverseSubscription(customerId: string, subscriptionI
     }  
 }  
 
-export async function getClientDataFromDataverse() {
-    const dynamicsWebApi = await initializeContext();
-    const actualPrimaryKeyFieldName = `${entityNameSingular}id`; // Standard convention for the GUID field
-
-    console.log(`Workspaceing records from Dataverse entity: ${entityName}`);
-    
-        // 2. Fetch Records from Dataverse that have a Subscription ID
-        // Select the actual primary key (GUID) and the subscription ID field
-        // Filter for records where the subscription ID field is not null
-        const retrieveOptions = {
-            collection: entityName,
-            select: [actualPrimaryKeyFieldName, subscriptionIdField],
-            filter: `${subscriptionIdField} ne null`,
-        };
-    
-        // Handle potential pagination if you have many records
-        let records: any[] = [];
-        let result = await dynamicsWebApi.retrieveMultiple(retrieveOptions);
-        records = records.concat(result.value);
-    
-        while (result["@odata.nextLink"]) {
-            console.log("Fetching next page of Dataverse records...");
-            result = await dynamicsWebApi.retrieveMultiple(retrieveOptions, result["@odata.nextLink"]);
-            records = records.concat(result.value);
-        }
-    
-        console.log(`Retrieved ${records.length} records from Dataverse with a subscription ID.`);
-        return records;
-}
-    
-
-export async function updateDataverseSubscription(customerId: string, subscriptionId: string, status: boolean) {
-    const dynamicsWebApi = await initializeContext();
+export async function updateDataverseSubscription(customerId: string, subscriptionId: string, status: boolean, context: InvocationContext) {
+    const dynamicsWebApi = await initializeContext(context);
 
     try {
         const primaryKeyFieldName = clientIdField; // As provided by the user
@@ -142,8 +112,8 @@ export async function updateDataverseSubscription(customerId: string, subscripti
     }  
 }  
 
-export async function writeCustomerToDataverse(customerId: string, email: string) {
-    const dynamicsWebApi = await initializeContext();
+export async function writeCustomerToDataverse(customerId: string, email: string, context: InvocationContext) {
+    const dynamicsWebApi = await initializeContext(context);
 
     try {
         // Prepare the record to be created in Dataverse
@@ -166,7 +136,38 @@ export async function writeCustomerToDataverse(customerId: string, email: string
     }
 }
 
-async function initializeContext() {
+
+export async function getClientDataFromDataverse(context: InvocationContext) {
+    const dynamicsWebApi = await initializeContext(context);
+    const actualPrimaryKeyFieldName = `${entityNameSingular}id`; // Standard convention for the GUID field
+
+    console.log(`Workspaceing records from Dataverse entity: ${entityName}`);
+    
+        // 2. Fetch Records from Dataverse that have a Subscription ID
+        // Select the actual primary key (GUID) and the subscription ID field
+        // Filter for records where the subscription ID field is not null
+        const retrieveOptions = {
+            collection: entityName,
+            select: [actualPrimaryKeyFieldName, subscriptionIdField],
+            filter: `${subscriptionIdField} ne null`,
+        };
+    
+        // Handle potential pagination if you have many records
+        let records: any[] = [];
+        let result = await dynamicsWebApi.retrieveMultiple(retrieveOptions);
+        records = records.concat(result.value);
+    
+        while (result["@odata.nextLink"]) {
+            console.log("Fetching next page of Dataverse records...");
+            result = await dynamicsWebApi.retrieveMultiple(retrieveOptions, result["@odata.nextLink"]);
+            records = records.concat(result.value);
+        }
+    
+        console.log(`Retrieved ${records.length} records from Dataverse with a subscription ID.`);
+        return records;
+}
+
+async function initializeContext(context: InvocationContext) {
     if (!tenantId || !appId || !clientSecret || !dataverseUrl) {
         throw new Error("Missing required environment variables for Dataverse connection");
     }
@@ -179,7 +180,7 @@ async function initializeContext() {
     try {
         new URL(dataverseUrl);
     } catch (e) {
-        console.error(`Invalid Dataverse URL format: ${dataverseUrl}`);
+        context.error(`Invalid Dataverse URL format: ${dataverseUrl}`);
         throw new Error(`Invalid Dataverse URL: ${dataverseUrl}. Please provide a valid URL like "https://yourorg.crm.dynamics.com"`);
     }
 
@@ -190,7 +191,7 @@ async function initializeContext() {
             const tokenResponse = await credential.getToken(`${dataverseUrl}/.default`);
             return tokenResponse.token;
         } catch (error) {
-            console.error("Error acquiring token:", error);
+            context.error("Error acquiring token:", error);
             throw error;
         }
     };
