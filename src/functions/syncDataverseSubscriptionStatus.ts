@@ -76,9 +76,6 @@ async function syncDataverseSubscriptionStatus(
 				);
 
 				// 6. Update Dataverse Record
-				const updateData: Record<string, unknown> = {};
-				updateData[subscriptionField] = isMollieActive; // Set boolean field
-
 				await updateDataverseSubscription(
 					customerSubscriptionId,
 					mollieSubscriptionId,
@@ -88,33 +85,21 @@ async function syncDataverseSubscriptionStatus(
 				context.log(`Successfully updated Dataverse record ${recordGuid}`);
 			} catch (mollieError: any) {
 				// Handle cases where the subscription might not exist in Mollie anymore
-				if (mollieError?.statusCode === 404) {
-					context.warn(
-						`Subscription ${mollieSubscriptionId} not found in Mollie for Dataverse record ${recordGuid}. Setting status to false.`,
-					);
+				try {
 					// Update Dataverse record to inactive if subscription doesn't exist in Mollie
-					const updateData: Record<string, unknown> = {};
-					updateData[subscriptionField] = false;
-					try {
-						await updateDataverseSubscription(
-							customerSubscriptionId,
-							mollieSubscriptionId,
-							false,
-							context,
-						);
-						context.log(
-							`Set Dataverse record ${recordGuid} subscription status to false as Mollie subscription was not found.`,
-						);
-					} catch (updateError) {
-						context.error(
-							`Failed to update Dataverse record ${recordGuid} after Mollie 404 error:`,
-							updateError,
-						);
-					}
-				} else {
+					await updateDataverseSubscription(
+						customerSubscriptionId,
+						mollieSubscriptionId,
+						false,
+						context,
+					);
+					context.log(
+						`Set Dataverse record ${recordGuid} subscription status to false as Mollie subscription was not found.`,
+					);
+				} catch (updateError) {
 					context.error(
-						`Error processing Mollie subscription ${mollieSubscriptionId} for Dataverse record ${recordGuid}:`,
-						mollieError,
+						`Failed to update Dataverse record ${recordGuid} after Mollie 404 error:`,
+						updateError,
 					);
 				}
 			}
